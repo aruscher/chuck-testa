@@ -3,9 +3,9 @@
 (defclass testable ()
   ((name :initarg :name :initform (error "NAME required.") :reader name)
    (description :initarg :description :initform "" :reader description)
-   (parent :initarg :parent :initform nil :accessor parent)))
+   (parent :initform nil :accessor parent)))
 
-(defclass test-suite ()
+(defclass test-suite (testable)
   ((childs :initarg :childs :initform '() :accessor childs)))
 
 (defgeneric add-child (testable suite))
@@ -15,7 +15,8 @@
   (setf (parent testable) suite))
 
 (defclass test-case (testable)
-  ((test-lambda :initarg :test-lambda :initform (error "TEST-LAMBDA required.") :reader test-lambda)))
+  ((test-lambda :initarg :test-lambda :initform (error "TEST-LAMBDA required.") :reader test-lambda)
+   (expression :initarg :expression :initform nil :reader expression)))
 
 (defmethod initialize-instance :after ((test-case test-case) &key)
   (assert (functionp (test-lambda test-case))))

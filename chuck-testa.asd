@@ -7,7 +7,11 @@
   :version "0.0.1"
   :serial t
   :pathname "src/"
+  :depends-on ("alexandria")
   :components ((:file "package")
                (:file "testable")
                (:file "result")
+               (:file "assertions")
+               (:file "runner")
+               (:file "specification")
                (:file "chuck-testa")))
