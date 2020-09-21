@@ -12,6 +12,7 @@
                (:file "testable")
                (:file "result")
                (:file "assertions")
-               (:file "runner")
                (:file "specification")
+               (:file "report")
+               (:file "runner")
                (:file "chuck-testa")))

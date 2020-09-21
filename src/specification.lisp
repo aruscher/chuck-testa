@@ -10,8 +10,7 @@
 
 (defmethod register :before ((testable testable))
   (with-slots (name) testable
-    (when (or (gethash name *test-suite-table*)
-              (gethash name *test-case-table*))
+    (when (resolve-testable name)
       (warn "Override ~a" name))))
 
 (defmethod register ((test-case test-case))
@@ -22,23 +21,41 @@
   (setf (gethash (name test-suite) *test-suite-table*)
         test-suite))
 
+(defun resolve-testable (name)
+  (or (gethash name *test-suite-table*)
+              (gethash name *test-case-table*)))
+
 (defmacro suite (args)
-  (destructuring-bind (name &key description) (alexandria:ensure-list args)
-    `(register (make-instance 'test-suite
-                     :name ',name
-                     :description ,(or description "")))))
+  (let ((test-suite (gensym "TEST-SUITE"))
+        (in-suite (gensym "IN-SUITE")))
+    (destructuring-bind (name &key description in) (alexandria:ensure-list args)
+      `(let ((,test-suite (make-instance 'test-suite
+                                         :name ',name
+                                         :description ,(or description ""))))
+         (register ,test-suite)
+         ,(when in
+            `(let ((,in-suite (gethash ',in *test-suite-table*)))
+               (if ,in-suite
+                   (add-child ,test-suite ,in-suite)
+                   (warn "Can't find suite ~a" ',in))))))))
 
-(defmacro test-case (args &body body)
-  (destructuring-bind (name &key description) (alexandria:ensure-list args)
-    (let ((test-lambda (apply #'build-test-lambda nil body)))
-      `(register (make-instance 'test-case
-                       :name ',name
-                       :description ,(or description "")
-                       :expression ',test-lambda
-                       :test-lambda ,test-lambda)))))
-
-(defun build-test-lambda (args &rest body)
+(defmacro build-test-lambda (args &rest body)
   `(lambda ,args
      (with-assertion-results
        ,@body)))
+
+(defmacro test-case (args &body body)
+  (let ((test-case (gensym "TEST-CASE"))
+        (in-suite (gensym "IN-SUITE")))
+    (destructuring-bind (name &key in description) (alexandria:ensure-list args)
+      `(let ((,test-case (make-instance 'test-case
+                                        :name ',name
+                                        :description ,(or description "")
+                                        :test-lambda (build-test-lambda nil ,@body))))
+         (register ,test-case)
+         ,(when in
+            `(let ((,in-suite (gethash ',in *test-suite-table*)))
+               (if ,in-suite
+                   (add-child ,test-case ,in-suite)
+                   (warn "Can't find suite ~a" ',in))))))))
 

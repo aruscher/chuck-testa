@@ -5,7 +5,7 @@
 (defmethod run ((test-suite test-suite))
   (let ((result (make-instance 'suite-result :origin test-suite)))
     (setf (child-results result)
-          (mapcar #'run (childs test-suite)))
+          (mapcar #'run (reverse (childs test-suite))))
     (setf (value result)
           (every #'identity
                  (mapcar #'value (child-results result))))
