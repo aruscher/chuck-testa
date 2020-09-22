@@ -13,6 +13,7 @@
   (false 123))
 
 (test-case (fooo3 :in foo123)
+  (error "foo")
   (false 123))
 
 
