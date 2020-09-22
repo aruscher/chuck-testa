@@ -5,6 +5,10 @@
    (description :initarg :description :initform "" :reader description)
    (parent :initform nil :accessor parent)))
 
+(defmethod print-object ((testable testable) stream)
+  (print-unreadable-object (testable stream :type t)
+    (format stream "~a" (name testable))))
+
 (defclass test-suite (testable)
   ((childs :initarg :childs :initform '() :accessor childs)))
 

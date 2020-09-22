@@ -2,18 +2,27 @@
 
 (in-package #:chuck-testa)
 
-(suite foo123)
+(defclass stupid-stack ()
+  ((content :initform '() :accessor content)))
 
-(test-case (fooo :in foo123)
-  (true 123))
+(defun push-element (element stack)
+  (push element (content stack)))
 
-(suite (foo5 :in foo123))
+(defun pop-element (stack)
+  (pop (content stack)))
 
-(test-case (fooo2 :in foo5)
-  (false 123))
+(defun number-of-element (stack)
+  (list-length (content stack)))
 
-(test-case (fooo3 :in foo123)
-  (error "foo")
-  (false 123))
+;; ----------------------------------------
+
+(defsuite stupid-stack-suite)
+
+(in-suite stupid-stack-suite)
+
+(defsuite other-suite)
+
+(defsuite (other-suite-2 :in stupid-stack-suite))
 
 
+(inspect (lookup-suite 'stupid-stack-suite))
