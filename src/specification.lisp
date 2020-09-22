@@ -5,32 +5,31 @@
 
 (defun register-suite (suite)
   (let ((suite-name (name suite)))
-    (when (suite-registered-p suite-name)
+    (when (lookup-suite suite-name)
       (warn "Suite ~a is already defined!" suite-name))
     (setf (gethash suite-name *suite-table*) suite)))
 
-(defun suite-registered-p (name)
-  (nth-value 1 (gethash name *suite-table*)))
-
 (defun lookup-suite (name)
-  (unless (suite-registered-p name)
-    (error "Suite ~a is not defined!" name))
   (gethash name *suite-table*))
 
 (defun activate-suite (name)
   (let ((suite (lookup-suite name)))
+    (unless suite
+      (error "Suite ~a is not defined!" name))
     (setf *active-suite* suite)))
 
 (defmacro in-suite (name)
   `(activate-suite ',name))
 
 (defmacro defsuite (args)
-  (let ((suite (gensym "SUITE")))
-    (print args)
+  (let ((suite (gensym "SUITE"))
+        (in-suite (gensym "IN-SUITE")))
     (destructuring-bind (name &key description in) (alexandria:ensure-list args)
-      `(let ((,suite (make-instance 'test-suite :name ',name :description ,(or description ""))))
+      `(let ((,suite
+              (make-instance 'test-suite
+                             :name ',name
+                             :description ,(or description "")))
+             (,in-suite (or (lookup-suite ',in) *active-suite*)))
          (register-suite ,suite)
-         (print ',in)
-         ,(cond
-            (in `(add-child ,suite (lookup-suite ',in)))
-            (*active-suite* `(add-child ,suite *active-suite*)))))))
+         (when ,in-suite
+           (add-child ,suite ,in-suite))))))

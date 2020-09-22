@@ -20,9 +20,3 @@
 
 (in-suite stupid-stack-suite)
 
-(defsuite other-suite)
-
-(defsuite (other-suite-2 :in stupid-stack-suite))
-
-
-(inspect (lookup-suite 'stupid-stack-suite))
